@@ -20,7 +20,6 @@ const productSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['cafe', 'te', 'bebida_fria', 'postre', 'snack', 'otro'],
       default: 'otro',
     },
     imageUrl: {

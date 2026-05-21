@@ -5,31 +5,44 @@ import {
   Modal, TextInput, Alert, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
-const CATEGORIES = ['todos', 'cafe', 'te', 'bebida_fria', 'postre', 'snack', 'otro'];
-
-const EMPTY_FORM = { name: '', description: '', price: '', category: 'cafe', available: true };
+const ALL_FILTER = { _id: 'todos', slug: 'todos', name: 'Todos', emoji: '🍽️' };
+const EMPTY_FORM = { name: '', description: '', price: '', category: '', available: true };
 
 export default function MenuScreen({ navigation }) {
-  const [products,  setProducts]  = useState([]);
-  const [filtered,  setFiltered]  = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [catFilter, setCatFilter] = useState('todos');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editing,   setEditing]   = useState(null); // producto que se edita
-  const [form,      setForm]      = useState(EMPTY_FORM);
-  const [saving,    setSaving]    = useState(false);
+  const [products,    setProducts]    = useState([]);
+  const [filtered,    setFiltered]    = useState([]);
+  const [categories,  setCategories]  = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [catFilter,   setCatFilter]   = useState('todos');
+  const [modalVisible,setModalVisible]= useState(false);
+  const [editing,     setEditing]     = useState(null);
+  const [form,        setForm]        = useState(EMPTY_FORM);
+  const [saving,      setSaving]      = useState(false);
 
-  useFocusEffect(useCallback(() => { fetchProducts(); }, []));
+  useFocusEffect(useCallback(() => {
+    fetchCategories();
+    fetchProducts();
+  }, []));
+
+  const fetchCategories = async () => {
+    try {
+      const res = await getCategories();
+      setCategories(res.data.data);
+    } catch {
+      // Falla silenciosa — el menú funciona igual sin categorías dinámicas
+    }
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const res = await getProducts();
-      setProducts(res.data.data);
-      setFiltered(res.data.data);
+      const data = res.data.data;
+      setProducts(data);
+      setFiltered(data);
     } catch {
       Alert.alert('Error', 'No se pudo cargar el menú');
     } finally {
@@ -37,7 +50,6 @@ export default function MenuScreen({ navigation }) {
     }
   };
 
-  // Filtrar por categoría
   useEffect(() => {
     if (catFilter === 'todos') {
       setFiltered(products);
@@ -46,9 +58,11 @@ export default function MenuScreen({ navigation }) {
     }
   }, [catFilter, products]);
 
+  const defaultCategory = categories[0]?.slug || 'otro';
+
   const openCreate = () => {
     setEditing(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, category: defaultCategory });
     setModalVisible(true);
   };
 
@@ -110,6 +124,8 @@ export default function MenuScreen({ navigation }) {
     navigation.navigate('Orders', { addProduct: product });
   };
 
+  const allFilters = [ALL_FILTER, ...categories];
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -122,14 +138,15 @@ export default function MenuScreen({ navigation }) {
 
       {/* Filtros por categoría */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
-        {CATEGORIES.map((cat) => (
+        {allFilters.map((cat) => (
           <TouchableOpacity
-            key={cat}
-            style={[styles.filterChip, catFilter === cat && styles.filterChipActive]}
-            onPress={() => setCatFilter(cat)}
+            key={cat._id}
+            style={[styles.filterChip, catFilter === cat.slug && styles.filterChipActive]}
+            onPress={() => setCatFilter(cat.slug)}
           >
-            <Text style={[styles.filterText, catFilter === cat && styles.filterTextActive]}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ')}
+            <Text style={styles.filterEmoji}>{cat.emoji}</Text>
+            <Text style={[styles.filterText, catFilter === cat.slug && styles.filterTextActive]}>
+              {cat.name}
             </Text>
           </TouchableOpacity>
         ))}
@@ -191,17 +208,18 @@ export default function MenuScreen({ navigation }) {
               placeholderTextColor="#AAA"
             />
 
-            {/* Selector de categoría */}
+            {/* Selector de categoría — cargado desde la API */}
             <Text style={styles.label}>Categoría:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-              {CATEGORIES.filter((c) => c !== 'todos').map((cat) => (
+              {categories.map((cat) => (
                 <TouchableOpacity
-                  key={cat}
-                  style={[styles.filterChip, form.category === cat && styles.filterChipActive]}
-                  onPress={() => setForm({ ...form, category: cat })}
+                  key={cat._id}
+                  style={[styles.filterChip, form.category === cat.slug && styles.filterChipActive]}
+                  onPress={() => setForm({ ...form, category: cat.slug })}
                 >
-                  <Text style={[styles.filterText, form.category === cat && styles.filterTextActive]}>
-                    {cat.replace('_', ' ')}
+                  <Text style={styles.filterEmoji}>{cat.emoji}</Text>
+                  <Text style={[styles.filterText, form.category === cat.slug && styles.filterTextActive]}>
+                    {cat.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -253,44 +271,43 @@ const styles = StyleSheet.create({
   addBtn:     { backgroundColor: '#C8622A', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 },
   addBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 
-  filters:     { paddingHorizontal: 16, marginBottom: 12, maxHeight: 44 },
-  filterChip:  { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: '#EEE', marginRight: 8 },
-  filterChipActive: { backgroundColor: '#C8622A' },
-  filterText:       { fontSize: 13, color: '#666', fontWeight: '600' },
-  filterTextActive: { color: '#fff' },
+  filters:         { paddingHorizontal: 12, marginBottom: 12, maxHeight: 52 },
+  filterChip:      { flexDirection: 'row', alignItems: 'center', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EEE', marginRight: 8, gap: 4 },
+  filterChipActive:{ backgroundColor: '#C8622A' },
+  filterEmoji:     { fontSize: 14 },
+  filterText:      { fontSize: 13, color: '#666', fontWeight: '600' },
+  filterTextActive:{ color: '#fff' },
 
   deleteBtn:     { alignSelf: 'flex-end', marginRight: 20, marginTop: -8, marginBottom: 4 },
   deleteBtnText: { fontSize: 18 },
   empty:         { textAlign: 'center', color: '#AAA', marginTop: 60, fontSize: 16 },
 
-  // Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: {
-    backgroundColor: '#fff',
+    backgroundColor:      '#fff',
     borderTopLeftRadius:  24,
     borderTopRightRadius: 24,
-    padding:         24,
-    paddingBottom:   40,
+    padding:              24,
+    paddingBottom:        40,
   },
   modalTitle: { fontSize: 20, fontWeight: '800', color: '#2D1B00', marginBottom: 16 },
   label:      { fontSize: 13, fontWeight: '600', color: '#666', marginBottom: 6 },
   input: {
-    borderWidth:   1.5,
-    borderColor:   '#E8DDD5',
-    borderRadius:  12,
-    padding:       13,
-    fontSize:      15,
-    color:         '#333',
-    marginBottom:  12,
+    borderWidth:     1.5,
+    borderColor:     '#E8DDD5',
+    borderRadius:    12,
+    padding:         13,
+    fontSize:        15,
+    color:           '#333',
+    marginBottom:    12,
     backgroundColor: '#FAFAFA',
   },
   toggleBtn:       { borderRadius: 12, padding: 13, backgroundColor: '#F0F0F0', marginBottom: 16, alignItems: 'center' },
   toggleBtnActive: { backgroundColor: '#E8F5E9' },
   toggleText:      { fontWeight: '700', fontSize: 14 },
-
-  modalBtns:     { flexDirection: 'row', gap: 12, marginTop: 4 },
-  cancelBtn:     { flex: 1, borderRadius: 12, padding: 14, backgroundColor: '#F0F0F0', alignItems: 'center' },
-  cancelBtnText: { fontWeight: '700', color: '#666' },
-  saveBtn:       { flex: 1, borderRadius: 12, padding: 14, backgroundColor: '#C8622A', alignItems: 'center' },
-  saveBtnText:   { fontWeight: '700', color: '#fff' },
+  modalBtns:       { flexDirection: 'row', gap: 12, marginTop: 4 },
+  cancelBtn:       { flex: 1, borderRadius: 12, padding: 14, backgroundColor: '#F0F0F0', alignItems: 'center' },
+  cancelBtnText:   { fontWeight: '700', color: '#666' },
+  saveBtn:         { flex: 1, borderRadius: 12, padding: 14, backgroundColor: '#C8622A', alignItems: 'center' },
+  saveBtnText:     { fontWeight: '700', color: '#fff' },
 });

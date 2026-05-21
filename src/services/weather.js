@@ -1,21 +1,18 @@
+import { WEATHER_API_KEY, WEATHER_CITY } from '../constants';
 
-
-const API_KEY = 'd15f72523aec253fc8878c17604baf40';
-const CITY    = 'Guadalajara';
-const BASE    = 'https://api.openweathermap.org/data/2.5';
+const BASE = 'https://api.openweathermap.org/data/2.5';
 
 export const getWeather = async () => {
   try {
-    const res  = await fetch(`${BASE}/weather?q=${CITY}&appid=${API_KEY}&units=metric&lang=es`);
+    const res  = await fetch(`${BASE}/weather?q=${WEATHER_CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=es`);
     const data = await res.json();
 
     if (data.cod !== 200) throw new Error('No se pudo obtener el clima');
 
     const temp        = Math.round(data.main.temp);
     const description = data.weather[0].description;
-    const icon        = data.weather[0].main; 
+    const icon        = data.weather[0].main;
 
-   
     let recommendation = '';
     if (temp >= 28) {
       recommendation = '🧊 Hace calor, te recomendamos un Frappé o Café Frío';
@@ -25,7 +22,7 @@ export const getWeather = async () => {
       recommendation = '🍵 Día fresco, ideal para un Latte o Té caliente';
     }
 
-    return { temp, description, icon, recommendation, city: CITY };
+    return { temp, description, icon, recommendation, city: WEATHER_CITY };
   } catch (err) {
     console.error('Error clima:', err.message);
     return null;

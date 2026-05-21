@@ -1,15 +1,11 @@
-
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const BASE_URL = 'http://192.168.68.1:3000/api';
-
+import { API_BASE_URL } from '../constants';
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   timeout: 10000,
 });
-
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('token');
@@ -19,23 +15,33 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// ── Usuarios ────────────────────────────────────────────────────────────
+export const registerUser = (data)       => api.post('/users/register', data);
+export const loginUser    = (data)       => api.post('/users/login', data);
+export const getAllUsers   = ()           => api.get('/users');
+export const getProfile   = (id)         => api.get(`/users/${id}`);
+export const updateUser   = (id, data)   => api.put(`/users/${id}`, data);
+export const deleteUser   = (id)         => api.delete(`/users/${id}`);
 
-export const registerUser = (data) => api.post('/users/register', data);
-export const loginUser    = (data) => api.post('/users/login', data);
-export const getProfile   = (id)   => api.get(`/users/${id}`);
-export const updateUser   = (id, data) => api.put(`/users/${id}`, data);
+// ── Productos ───────────────────────────────────────────────────────────
+export const getProducts   = ()           => api.get('/products');
+export const getProduct    = (id)         => api.get(`/products/${id}`);
+export const createProduct = (data)       => api.post('/products', data);
+export const updateProduct = (id, data)   => api.put(`/products/${id}`, data);
+export const deleteProduct = (id)         => api.delete(`/products/${id}`);
 
+// ── Pedidos ─────────────────────────────────────────────────────────────
+export const getAllOrders       = ()             => api.get('/orders');
+export const createOrder        = (data)         => api.post('/orders', data);
+export const getMyOrders        = ()             => api.get('/orders/my');
+export const updateOrderStatus  = (id, status)   => api.patch(`/orders/${id}/status`, { status });
+export const deleteOrder        = (id)           => api.delete(`/orders/${id}`);
 
-export const getProducts      = ()       => api.get('/products');
-export const getProduct       = (id)     => api.get(`/products/${id}`);
-export const createProduct    = (data)   => api.post('/products', data);
-export const updateProduct    = (id, data) => api.put(`/products/${id}`, data);
-export const deleteProduct    = (id)     => api.delete(`/products/${id}`);
-
-
-export const createOrder      = (data)   => api.post('/orders', data);
-export const getMyOrders      = ()       => api.get('/orders/my');
-export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/status`, { status });
-export const deleteOrder      = (id)     => api.delete(`/orders/${id}`);
+// ── Categorías ──────────────────────────────────────────────────────────
+export const getCategories    = ()         => api.get('/categories');
+export const getAllCategories  = ()         => api.get('/categories/all');
+export const createCategory   = (data)     => api.post('/categories', data);
+export const updateCategory   = (id, data) => api.put(`/categories/${id}`, data);
+export const deleteCategory   = (id)       => api.delete(`/categories/${id}`);
 
 export default api;

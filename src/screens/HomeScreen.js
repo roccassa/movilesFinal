@@ -6,16 +6,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getWeather } from '../services/weather';
-
-const WEATHER_EMOJI = {
-  Clear:        '☀️',
-  Clouds:       '☁️',
-  Rain:         '🌧️',
-  Drizzle:      '🌦️',
-  Thunderstorm: '⛈️',
-  Snow:         '❄️',
-  Mist:         '🌫️',
-};
+import { WEATHER_EMOJI } from '../constants';
 
 export default function HomeScreen({ navigation }) {
   const [user,    setUser]    = useState(null);
