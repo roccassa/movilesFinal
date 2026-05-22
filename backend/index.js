@@ -1,3 +1,8 @@
+// Forzar DNS de Google para resolver registros SRV de MongoDB Atlas
+// (algunos ISPs bloquean consultas SRV en su DNS por defecto)
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const express = require('express');
 const cors    = require('cors');
 require('dotenv').config();
