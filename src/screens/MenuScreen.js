@@ -17,6 +17,7 @@ export default function MenuScreen({ navigation }) {
   const [categories,  setCategories]  = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [catFilter,   setCatFilter]   = useState('todos');
+  const [search,      setSearch]      = useState('');
   const [modalVisible,setModalVisible]= useState(false);
   const [editing,     setEditing]     = useState(null);
   const [form,        setForm]        = useState(EMPTY_FORM);
@@ -51,12 +52,17 @@ export default function MenuScreen({ navigation }) {
   };
 
   useEffect(() => {
-    if (catFilter === 'todos') {
-      setFiltered(products);
-    } else {
-      setFiltered(products.filter((p) => p.category === catFilter));
+    let result = products;
+    if (catFilter !== 'todos') {
+      result = result.filter((p) => p.category === catFilter);
     }
-  }, [catFilter, products]);
+    if (search.trim()) {
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(search.trim().toLowerCase())
+      );
+    }
+    setFiltered(result);
+  }, [catFilter, search, products]);
 
   const defaultCategory = categories[0]?.slug || 'otro';
 
@@ -134,6 +140,25 @@ export default function MenuScreen({ navigation }) {
         <TouchableOpacity style={styles.addBtn} onPress={openCreate}>
           <Text style={styles.addBtnText}>+ Agregar</Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Barra de búsqueda */}
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar producto..."
+          placeholderTextColor="#AAA"
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+        />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={() => setSearch('')} style={styles.clearBtn}>
+            <Text style={styles.clearBtnText}>✕</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Filtros por categoría */}
@@ -270,6 +295,22 @@ const styles = StyleSheet.create({
   title:      { fontSize: 28, fontWeight: '900', color: '#2D1B00' },
   addBtn:     { backgroundColor: '#C8622A', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 },
   addBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+
+  searchContainer: {
+    flexDirection:    'row',
+    alignItems:       'center',
+    backgroundColor:  '#fff',
+    borderRadius:     12,
+    marginHorizontal: 16,
+    marginBottom:     12,
+    paddingHorizontal: 12,
+    borderWidth:      1.5,
+    borderColor:      '#E8DDD5',
+  },
+  searchIcon:  { fontSize: 16, marginRight: 8 },
+  searchInput: { flex: 1, paddingVertical: 11, fontSize: 15, color: '#333' },
+  clearBtn:    { padding: 4 },
+  clearBtnText:{ fontSize: 14, color: '#AAA', fontWeight: '700' },
 
   filters:         { paddingHorizontal: 12, marginBottom: 12, maxHeight: 52 },
   filterChip:      { flexDirection: 'row', alignItems: 'center', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EEE', marginRight: 8, gap: 4 },
