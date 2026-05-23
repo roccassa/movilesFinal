@@ -5,6 +5,7 @@ import {
   Modal, TextInput, Alert, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
@@ -18,12 +19,18 @@ export default function MenuScreen({ navigation }) {
   const [loading,     setLoading]     = useState(true);
   const [catFilter,   setCatFilter]   = useState('todos');
   const [search,      setSearch]      = useState('');
+  const [isAdmin,     setIsAdmin]     = useState(false);
   const [modalVisible,setModalVisible]= useState(false);
   const [editing,     setEditing]     = useState(null);
   const [form,        setForm]        = useState(EMPTY_FORM);
   const [saving,      setSaving]      = useState(false);
 
   useFocusEffect(useCallback(() => {
+    const loadRole = async () => {
+      const data = await AsyncStorage.getItem('user');
+      if (data) setIsAdmin(JSON.parse(data).role === 'admin');
+    };
+    loadRole();
     fetchCategories();
     fetchProducts();
   }, []));
@@ -137,9 +144,11 @@ export default function MenuScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Menú ☕</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={openCreate}>
-          <Text style={styles.addBtnText}>+ Agregar</Text>
-        </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity style={styles.addBtn} onPress={openCreate}>
+            <Text style={styles.addBtnText}>+ Agregar</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Barra de búsqueda */}
@@ -188,12 +197,14 @@ export default function MenuScreen({ navigation }) {
             <View>
               <ProductCard
                 product={item}
-                onPress={() => openEdit(item)}
+                onPress={isAdmin ? () => openEdit(item) : null}
                 onAddToOrder={handleAddToOrder}
               />
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item)}>
-                <Text style={styles.deleteBtnText}>🗑</Text>
-              </TouchableOpacity>
+              {isAdmin && (
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item)}>
+                  <Text style={styles.deleteBtnText}>🗑</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
           ListEmptyComponent={

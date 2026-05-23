@@ -1,9 +1,10 @@
 // src/navigation/AppNavigator.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen    from '../screens/LoginScreen';
 import HomeScreen     from '../screens/HomeScreen';
@@ -34,6 +35,19 @@ function AdminStack() {
 
 // ── Tab Navigator ───────────────────────────────────────────────────────
 function MainTabs() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      const data = await AsyncStorage.getItem('user');
+      if (data) {
+        const user = JSON.parse(data);
+        setIsAdmin(user.role === 'admin');
+      }
+    };
+    loadRole();
+  }, []);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -64,7 +78,14 @@ function MainTabs() {
       <Tab.Screen name="Home"    component={HomeScreen}    options={{ title: 'Inicio' }} />
       <Tab.Screen name="Menu"    component={MenuScreen}    options={{ title: 'Menú' }} />
       <Tab.Screen name="Orders"  component={OrdersScreen}  options={{ title: 'Pedidos' }} />
-      <Tab.Screen name="Admin"   component={AdminStack}    options={{ title: 'Admin' }} />
+      <Tab.Screen
+        name="Admin"
+        component={AdminStack}
+        options={{
+          title: 'Admin',
+          tabBarButton: isAdmin ? undefined : () => null,
+        }}
+      />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
     </Tab.Navigator>
   );
