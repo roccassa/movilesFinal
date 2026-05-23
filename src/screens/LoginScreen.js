@@ -47,9 +47,14 @@ export default function LoginScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'android' ? 30 : 0}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Logo */}
         <View style={styles.logoContainer}>
           <Text style={styles.logoEmoji}>☕</Text>
@@ -115,7 +120,7 @@ export default function LoginScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF8F2' },
-  scroll:    { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  scroll:    { flexGrow: 1, justifyContent: 'center', padding: 24, paddingBottom: 60 },
   logoContainer: { alignItems: 'center', marginBottom: 32 },
   logoEmoji:     { fontSize: 64 },
   logoTitle:     { fontSize: 36, fontWeight: '900', color: '#2D1B00', marginTop: 8 },
