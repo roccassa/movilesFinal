@@ -78,14 +78,9 @@ function MainTabs() {
       <Tab.Screen name="Home"    component={HomeScreen}    options={{ title: 'Inicio' }} />
       <Tab.Screen name="Menu"    component={MenuScreen}    options={{ title: 'Menú' }} />
       <Tab.Screen name="Orders"  component={OrdersScreen}  options={{ title: 'Pedidos' }} />
-      <Tab.Screen
-        name="Admin"
-        component={AdminStack}
-        options={{
-          title: 'Admin',
-          tabBarButton: isAdmin ? undefined : () => null,
-        }}
-      />
+      {isAdmin && (
+        <Tab.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
+      )}
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
     </Tab.Navigator>
   );
