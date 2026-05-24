@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/yo/Documents/GitHub/CoffeeShopP2 && ls -la)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\yo\\\\Documents\\\\GitHub\\\\CoffeeShopP2\\\\Coffee.WebSite\\\\Pages\\\\\" -Recurse -Include \"*.cshtml\", \"*.cshtml.cs\" | Select-Object -ExpandProperty FullName)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\yo\\\\Documents\\\\GitHub\\\\CoffeeShopP2\\\\Coffee.WebSite\\\\Pages\\\\POS\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Done\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\yo\\\\Documents\\\\GitHub\\\\CoffeeShopP2\\\\Coffee.WebSite\\\\Pages\\\\POS\")",
+      "Bash(dotnet build *)"
+    ]
+  }
+}
