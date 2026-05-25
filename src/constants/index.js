@@ -59,4 +59,4 @@ export const STATUS_FLOW = ['pendiente', 'en_preparacion', 'listo', 'entregado',
 
 // ── API ────────────────────────────────────────────────────────────────
 // Cambia esta IP por la IP local de tu máquina (ipconfig en Windows)
-export const API_BASE_URL = 'http://10.23.99.126:3000/api';
+export const API_BASE_URL = 'http://10.86.77.126:3000/api';
